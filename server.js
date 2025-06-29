@@ -17,22 +17,22 @@ let isConnected = false
 let qrCode = ""
 
 // Ensure sessions directory exists
-const sessionsDir = "./sessions"
-if (!fs.existsSync(sessionsDir)) {
-  fs.mkdirSync(sessionsDir, { recursive: true })
+const sessionsDir = "./session"
+if (!fs.existsSync(sessionDir)) {
+  fs.mkdirSync(sessionDir, { recursive: true })
 }
 
 // Initialize WhatsApp connection
 async function connectToWhatsApp() {
-  const state = await fs.promises.readdir("./sessions").then((files) => {
+  const state = await fs.promises.readdir("./session").then((files) => {
     if (files.length > 0) {
-      return require("./sessions/creds.json")
+      return require("./session/creds.json")
     }
     return null
   })
 
   const saveCreds = (creds) => {
-    fs.writeFileSync("./sessions/creds.json", JSON.stringify(creds))
+    fs.writeFileSync("./session/creds.json", JSON.stringify(creds))
   }
 
   sock = makeWASocket({
