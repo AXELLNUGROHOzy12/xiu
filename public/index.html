@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Baileys Automation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #075E54;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin-bottom: 10px;
+        }
+
+        .status {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-connected {
+            background: #25D366;
+        }
+
+        .status-disconnected {
+            background: #dc3545;
+        }
+
+        .qr-section {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .qr-code {
+            margin: 20px 0;
+        }
+
+        .form-section {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #25D366;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            background: #128C7E;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #25D366;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .help-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 WhatsApp Baileys Automation</h1>
+            <p>Kirim pesan WhatsApp otomatis dengan mudah</p>
+        </div>
+
+        <div class="status">
+            <div id="connectionStatus">
+                <span class="status-indicator status-disconnected"></span>
+                <span>Menghubungkan...</span>
+            </div>
+        </div>
+
+        <div class="qr-section" id="qrSection" style="display: none;">
+            <h3>📱 Scan QR Code dengan WhatsApp</h3>
+            <div class="qr-code" id="qrCode"></div>
+            <p class="help-text">Buka WhatsApp → Titik tiga → Perangkat Tertaut → Tautkan Perangkat</p>
+        </div>
+
+        <div class="form-section">
+            <div class="alert alert-success" id="successAlert"></div>
+            <div class="alert alert-error" id="errorAlert"></div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Mengirim pesan...</p>
+            </div>
+
+            <form id="messageForm">
+                <div class="form-group">
+                    <label for="target">📞 Nomor Target</label>
+                    <input type="text" id="target" name="target" placeholder="08123456789 atau 628123456789" required>
+                    <div class="help-text">Masukkan nomor dengan format 08xxx atau 628xxx</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">💬 Pesan</label>
+                    <textarea id="message" name="message" placeholder="Tulis pesan yang ingin dikirim..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn" id="sendBtn">
+                    📤 Kirim Pesan
+                </button>
+                
+                <button type="button" class="btn btn-danger" id="logoutBtn">
+                    🚪 Logout
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let isConnected = false;
+
+        // Check connection status
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                isConnected = data.connected;
+                updateUI(data);
+            } catch (error) {
+                console.error('Error checking status:', error);
+            }
+        }
+
+        // Update UI based on connection status
+        function updateUI(data) {
+            const statusElement = document.getElementById('connectionStatus');
+            const qrSection = document.getElementById('qrSection');
+            const sendBtn = document.getElementById('sendBtn');
+            
+            if (data.connected) {
+                statusElement.innerHTML = '<span class="status-indicator status-connected"></span><span>✅ Terhubung ke WhatsApp</span>';
+                qrSection.style.display = 'none';
+                sendBtn.disabled = false;
+            } else if (data.qrCode) {
+                statusElement.innerHTML = '<span class="status-indicator status-disconnected"></span><span>📱 Scan QR Code untuk menghubungkan</span>';
+                showQRCode(data.qrCode);
+                sendBtn.disabled = true;
+            } else {
+                statusElement.innerHTML = '<span class="status-indicator status-disconnected"></span><span>🔄 Menghubungkan...</span>';
+                qrSection.style.display = 'none';
+                sendBtn.disabled = true;
+            }
+        }
+
+        // Show QR Code
+        function showQRCode(qrData) {
+            const qrSection = document.getElementById('qrSection');
+            const qrCode = document.getElementById('qrCode');
+            
+            // Generate QR code using qr-server API
+            qrCode.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}" alt="QR Code">`;
+            qrSection.style.display = 'block';
+        }
+
+        // Send message
+        document.getElementById('messageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!isConnected) {
+                showAlert('WhatsApp belum terhubung!', 'error');
+                return;
+            }
+            
+            const target = document.getElementById('target').value;
+            const message = document.getElementById('message').value;
+            
+            if (!target || !message) {
+                showAlert('Nomor target dan pesan harus diisi!', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                const response = await fetch('/api/send-message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ target, message })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(`✅ Pesan berhasil dikirim ke ${target}!`, 'success');
+                    document.getElementById('messageForm').reset();
+                } else {
+                    showAlert(`❌ Gagal mengirim pesan: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`❌ Error: ${error.message}`, 'error');
+            }
+            
+            showLoading(false);
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            if (confirm('Yakin ingin logout dari WhatsApp?')) {
+                try {
+                    const response = await fetch('/api/logout', {
+                        method: 'POST'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showAlert('✅ Berhasil logout dari WhatsApp', 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+                    } else {
+                        showAlert(`❌ Gagal logout: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    showAlert(`❌ Error: ${error.message}`, 'error');
+                }
+            }
+        });
+
+        // Show alert
+        function showAlert(message, type) {
+            const alertElement = document.getElementById(type === 'success' ? 'successAlert' : 'errorAlert');
+            alertElement.textContent = message;
+            alertElement.style.display = 'block';
+            
+            setTimeout(() => {
+                alertElement.style.display = 'none';
+            }, 5000);
+        }
+
+        // Show/hide loading
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('sendBtn').disabled = show || !isConnected;
+        }
+
+        // Check status every 3 seconds
+        setInterval(checkStatus, 3000);
+        
+        // Initial status check
+        checkStatus();
+    </script>
+</body>
+</html>
